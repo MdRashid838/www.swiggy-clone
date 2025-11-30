@@ -1,0 +1,335 @@
+import React, { useState, useEffect } from "react";
+import api from "../lib/api";
+import { useSelector } from "react-redux";
+import { useParams, Link } from "react-router-dom";
+
+export default function RestaurantDetails() {
+  const { id } = useParams();
+  const restaurantId = id;
+  const auth = useSelector((s) => s.auth);
+  const [isOpen, setIsOpen] = useState(false);
+  const [allitems, getAllItems] = useState([]);
+
+  const [menuItems, setMenuItems] = useState([]);
+
+  //   console.log(id)
+  const [createItems, setCreateItems] = useState({
+    restaurant: restaurantId,
+    name: "",
+    description: "",
+    price: "",
+    images: "",
+    isVeg: false,
+    deliveryTime: "",
+  });
+
+  const [loading, setLoading] = useState(false);
+  const [msg, setMsg] = useState("");
+
+  // fetch restaurants
+  const fetchRestaurants = async () => {
+    try {
+      const res = await api.get(`/restaurant/${restaurantId}`);
+      setMenuItems(res.data.data);
+    } catch (err) {
+      console.log("Error fetching:", err);
+    }
+  };
+
+  // get restaurent item from restaurent id
+ async function fetchResMenuItem() {
+  try {
+    const res = await api.get(`/menuitem/restaurant/${restaurantId}`);
+    getAllItems(res.data); // CORRECT
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+  useEffect(() => {
+    fetchRestaurants();
+    fetchResMenuItem();
+  }, []);
+
+  //   const handleChange = (e) => {
+  //     const { name, value } = e.target;
+
+  //     if (["address", "lat", "lng"].includes(name)) {
+  //       setCreateResto({
+  //         ...createResto,
+  //         location: {
+  //           ...createResto.location,
+  //           [name]: value,
+  //         },
+  //       });
+  //     } else if (name === "isOpen") {
+  //       setCreateResto({ ...createResto, isOpen: value === "true" });
+  //     } else {
+  //       setCreateResto({ ...createResto, [name]: value });
+  //     }
+  //   };
+
+  const handleChange = (e) => {
+  const { name, value, type, checked, files } = e.target;
+
+  if (name === "images") {
+    setCreateItems({
+      ...createItems,
+      images: files[0],
+    });
+  } else {
+    setCreateItems({
+      ...createItems,
+      [name]: type === "checkbox" ? checked : value,
+    });
+  }
+};
+
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setMsg("");
+
+    try {
+      const formData = new FormData();
+      formData.append("restaurant", restaurantId);
+      formData.append("name", createItems.name);
+      formData.append("description", createItems.description);
+      formData.append("price", createItems.price);
+      formData.append("isVeg", createItems.isVeg.toString());
+      formData.append("deliveryTime", createItems.deliveryTime);
+
+      if (createItems.images) {
+        formData.append("images", createItems.images);
+      }
+
+      console.log(formData);
+      const token = localStorage.getItem("token"); // fetch token
+
+      const res = await api.post("/menuitem", formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      setMsg("New Item added!");
+
+      createItems({
+        restaurant: restaurantId,
+        name: "",
+        description: "",
+        price: "",
+        images: "",
+        isVeg: false,
+        deliveryTime: "",
+      });
+
+      setIsOpen(false);
+      fetchRestaurants();
+    } catch (err) {
+      setMsg(err.response?.data?.error || "Something went wrong");
+    }
+
+    setLoading(false);
+  };
+
+  return (
+    <div className="p-6 bg-gray-100 min-h-screen">
+      {" "}
+      <div className="flex justify-between items-center mb-4">
+        {" "}
+        <h1 className="text-2xl font-bold">{menuItems.name}</h1>
+        <button
+          onClick={() => setIsOpen(true)}
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg"
+        >
+          + Add New Item
+        </button>
+      </div>
+      {/* Restaurant Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-white rounded-xl shadow-md overflow-hidden">
+          <img
+            src={`http://localhost:5000/${menuItems.images?.[0]}`}
+            className="h-40 w-full object-cover"
+            alt="restaurant"
+          />
+
+          <div className="p-4">
+            <h2 className="text-lg font-semibold">{menuItems.name}</h2>
+            <p className="text-gray-600 text-sm">
+              {menuItems?.location?.address}
+            </p>
+            <div className="flex items-center mt-2 text-sm">
+              <span className="text-yellow-500 font-bold">
+                ★ {menuItems.rating}
+              </span>
+              <span className="text-gray-500 ml-2">
+                ({menuItems.ratingCount})
+              </span>
+            </div>
+            <p
+              className={`mt-1 text-sm font-semibold ${
+                menuItems.isOpen ? "text-green-600" : "text-red-600"
+              }`}
+            >
+              {menuItems.isOpen ? "Open Now" : "Closed"}
+            </p>
+          </div>
+        </div>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {allitems.map((r) => (
+          <div key={r._id} className="bg-white p-4 rounded shadow">
+            <img
+              src={r.image || "https://via.placeholder.com/200"}
+              alt={r.name}
+              className="h-40 w-full object-cover rounded"
+            />
+
+            <div className="flex flex-row justify-between items-center">
+              <h3 className="mt-2 font-semibold">
+                {r.name}
+                <span className="ps-2 text-sm">{r.isVeg ? "🟢" : "🔴"}</span>
+              </h3>
+              <p className="text-sm text-gray-600">★★★★</p>
+            </div>
+
+            <p className="text-sm text-gray-600">{r.description}</p>
+
+            <div className="mt-2 flex justify-between items-center">
+              <Link to={`/menuitem/${r._id}`} className="text-sm text-blue-600">
+                View
+              </Link>
+
+              <div className="text-sm flex flex-row gap-2">
+                <p className="font-bold">₹{r.price}</p>
+                {r.discount && (
+                  <p className="line-through text-green-900 font-medium">
+                    {r.discount}% off
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        ))}
+
+        {allitems.length === 0 && (
+          <p className="text-gray-600 text-center min-w-full col-span-4">
+            No items found
+          </p>
+        )}
+      </div>
+      {/* POPUP */}
+      {isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white w-full max-w-2xl max-h-[90%] overflow-y-scroll scrollbar-hide p-6 rounded-xl shadow-lg relative">
+            {/* Close Button */}
+            <button
+              onClick={() => setIsOpen(false)}
+              className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-xl font-bold"
+            >
+              &times;
+            </button>
+
+            <h2 className="text-2xl font-bold mb-6 text-center">
+              Create Menu Item
+            </h2>
+
+            {msg && (
+              <p className="mb-4 text-center text-sm text-green-600 font-semibold">
+                {msg}
+              </p>
+            )}
+
+            <form onSubmit={handleSubmit}>
+              <input
+                type="hidden"
+                value={createItems.restaurantId}
+              />
+
+              <label className="block mb-2 text-gray-700 text-sm font-semibold">
+                Item Name
+              </label>
+              <input
+                type="text"
+                name="name"
+                value={createItems.name}
+                onChange={handleChange}
+                className="w-full mb-4 p-2 border rounded"
+                required
+              />
+
+              <label className="block mb-2 text-gray-700 text-sm font-semibold">
+                Description
+              </label>
+              <textarea
+                name="description"
+                value={createItems.description}
+                onChange={handleChange}
+                className="w-full mb-4 p-2 border rounded"
+              ></textarea>
+
+              <label className="block mb-2 text-gray-700 text-sm font-semibold">
+                Price
+              </label>
+              <input
+                type="number"
+                name="price"
+                value={createItems.price}
+                onChange={handleChange}
+                className="w-full mb-4 p-2 border rounded"
+                required
+              />
+
+              <label className="block mb-2 text-gray-700 text-sm font-semibold">
+                Image
+              </label>
+              <input
+                type="file"
+                onChange={(e) =>
+                  setCreateResto({ ...createResto, images: e.target.files[0] })
+                }
+                className="w-full mb-4 p-2 border rounded"
+              />
+
+              <label className="block mb-2 text-gray-700 text-sm font-semibold">
+                Delivery Time (mins)
+              </label>
+              <input
+                type="number"
+                name="deliveryTime"
+                value={createItems.deliveryTime}
+                onChange={handleChange}
+                className="w-full mb-4 p-2 border rounded"
+              />
+
+              <div className="flex items-center mb-4">
+                <input
+                  type="checkbox"
+                  name="isVeg"
+                  checked={createItems.isVeg}
+                  onChange={handleChange}
+                  className="mr-2"
+                />
+                <label className="text-gray-700 text-sm font-semibold">
+                  Veg Item
+                </label>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition"
+                disabled={loading}
+              >
+                {loading ? "Creating..." : "Create Item"}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

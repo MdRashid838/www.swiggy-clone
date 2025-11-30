@@ -1,0 +1,122 @@
+import React, { useEffect, useState } from "react";
+import api from "../lib/api";
+import { Link } from "react-router-dom";
+import Filter from "./Filter";
+
+export default function MenuItemPage() {
+  const [menuItem, setMenuItem] = useState([]);
+  const [q, setQ] = useState("");
+
+  const [filters, setFilters] = useState({
+    category: "",
+    isVeg: "",
+    priceSort: "",
+  });
+
+  // Fetch Menu Items
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  async function fetchData() {
+    try {
+      const res = await api.get("/menuitem");
+      setMenuItem(res.data.data || res.data || []);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  // Search Filter Logic
+  const search = menuItem.filter((r) =>
+    r.name.toLowerCase().includes(q.toLowerCase())
+  );
+
+  // Apply All Filters
+  const finalList = search
+    .filter((item) =>
+      filters.category ? item.category === filters.category : true
+    )
+    .filter((item) =>
+      filters.isVeg !== "" ? item.isVeg.toString() === filters.isVeg : true
+    )
+    .sort((a, b) => {
+      if (filters.priceSort === "low") return a.price - b.price;
+      if (filters.priceSort === "high") return b.price - a.price;
+      return 0;
+    });
+
+  return (
+    <div className="flex flex-row">
+
+      {/* Left Filter Section */}
+      <div className="w-1/4 h-screen sticky top-20">
+        <Filter onFilterChange={(f) => setFilters(f)} />
+      </div>
+
+      {/* Right Menu List Section */}
+      <div className="w-full p-4">
+
+        {/* Search Box */}
+        <div className="mb-4 sticky top-14">
+          <input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Search menu item"
+            className="border p-2 rounded w-full"
+          />
+        </div>
+
+        {/* Menu Grid */}
+        {}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {finalList.map((r) => (
+            <div key={r._id} className="bg-white p-4 rounded shadow">
+
+              <img
+                src={r.image || "https://via.placeholder.com/200"}
+                alt={r.name}
+                className="h-40 w-full object-cover rounded"
+              />
+
+              <div className="flex flex-row justify-between items-center">
+                <h3 className="mt-2 font-semibold">
+                  {r.name}
+                  <span className="ps-2 text-sm">
+                    {r.isVeg ? "🟢" : "🔴"}
+                  </span>
+                </h3>
+                <p className="text-sm text-gray-600">★★★★</p>
+              </div>
+
+              <p className="text-sm text-gray-600">{r.description}</p>
+
+              <div className="mt-2 flex justify-between items-center">
+                <Link to={`/menuitem/${r._id}`} className="text-sm text-blue-600">
+                  View
+                </Link>
+
+                <div className="text-sm flex flex-row gap-2">
+                  <p className="font-bold">₹{r.price}</p>
+                  {r.discount && (
+                    <p className="line-through text-green-900 font-medium">
+                      {r.discount}% off
+                    </p>
+                  )}
+                </div>
+              </div>
+
+            </div>
+          ))}
+
+          {finalList.length === 0 && (
+            <p className="text-gray-600 text-center min-w-full col-span-4">
+              No items found
+            </p>
+          )}
+        </div>
+
+      </div>
+    </div>
+  );
+}
