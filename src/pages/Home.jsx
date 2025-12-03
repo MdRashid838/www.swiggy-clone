@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import api from "../lib/api";
 import { Link } from "react-router-dom";
 import Filter from "./Filter";
+import { useDispatch } from "react-redux";
+import {addItem} from "../store/slices/cartSlice"
 
 export default function MenuItemPage() {
   const [menuItem, setMenuItem] = useState([]);
@@ -12,6 +14,8 @@ export default function MenuItemPage() {
     isVeg: "",
     priceSort: "",
   });
+
+  const dispatch = useDispatch();
 
   // Fetch Menu Items
   useEffect(() => {
@@ -90,6 +94,7 @@ export default function MenuItemPage() {
               </div>
 
               <p className="text-sm text-gray-600">{r.description}</p>
+              <button onClick={() => dispatch(addItem(r)) }>Add to cart</button>
 
               <div className="mt-2 flex justify-between items-center">
                 <Link to={`/menuitem/${r._id}`} className="text-sm text-blue-600">

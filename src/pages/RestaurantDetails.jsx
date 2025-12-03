@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from "react";
 import api from "../lib/api";
-import { useSelector } from "react-redux";
 import { useParams, Link } from "react-router-dom";
+import EditMenuItem from "./EditMenuItem";
 
 export default function RestaurantDetails() {
   const { id } = useParams();
   const restaurantId = id;
-  const auth = useSelector((s) => s.auth);
+  // const auth = useSelector((s) => s.auth);
   const [isOpen, setIsOpen] = useState(false);
-  const [allitems, getAllItems] = useState([]);
+  const [itemOpen, setItemOpen] = useState(false);
+  const [allitems, setAllItems] = useState([]);
+  const [selectedItemId, setSelectedItemId] = useState(null);
 
   const [menuItems, setMenuItems] = useState([]);
 
@@ -18,16 +20,16 @@ export default function RestaurantDetails() {
     name: "",
     description: "",
     price: "",
-    images: "",
+    images: null,
     isVeg: false,
-    deliveryTime: "",
+    deliveryTime: { min: "", max: "" },
   });
 
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState("");
 
   // fetch restaurants
-  const fetchRestaurants = async () => {
+  const fetchMenuItems = async () => {
     try {
       const res = await api.get(`/restaurant/${restaurantId}`);
       setMenuItems(res.data.data);
@@ -37,17 +39,17 @@ export default function RestaurantDetails() {
   };
 
   // get restaurent item from restaurent id
- async function fetchResMenuItem() {
-  try {
-    const res = await api.get(`/menuitem/restaurant/${restaurantId}`);
-    getAllItems(res.data); // CORRECT
-  } catch (err) {
-    console.error(err);
+  async function fetchResMenuItem() {
+    try {
+      const res = await api.get(`/menuitem/restaurant/${restaurantId}`);
+      setAllItems(res.data); // CORRECT
+    } catch (err) {
+      console.error(err);
+    }
   }
-}
 
   useEffect(() => {
-    fetchRestaurants();
+    fetchMenuItems();
     fetchResMenuItem();
   }, []);
 
@@ -70,21 +72,27 @@ export default function RestaurantDetails() {
   //   };
 
   const handleChange = (e) => {
-  const { name, value, type, checked, files } = e.target;
+    const { name, value, type, checked, files } = e.target;
 
-  if (name === "images") {
-    setCreateItems({
-      ...createItems,
-      images: files[0],
-    });
-  } else {
-    setCreateItems({
-      ...createItems,
-      [name]: type === "checkbox" ? checked : value,
-    });
-  }
-};
-
+    if (name === "images") {
+      setCreateItems({
+        ...createItems,
+        images: files[0],
+      });
+    } else if (name === "min" || name === "max") {
+      setCreateItems({
+        ...createItems,
+        deliveryTime: {
+          ...createItems.deliveryTime,
+          [name]: value,
+        },
+      });
+    } else if (type === "checkbox") {
+      setCreateItems({ ...createItems, [name]: checked });
+    } else {
+      setCreateItems({ ...createItems, [name]: value });
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -92,42 +100,47 @@ export default function RestaurantDetails() {
     setMsg("");
 
     try {
-      const formData = new FormData();
-      formData.append("restaurant", restaurantId);
-      formData.append("name", createItems.name);
-      formData.append("description", createItems.description);
-      formData.append("price", createItems.price);
-      formData.append("isVeg", createItems.isVeg.toString());
-      formData.append("deliveryTime", createItems.deliveryTime);
+      const fd = new FormData();
+      fd.append("restaurant", restaurantId);
+      fd.append("name", createItems.name);
+      fd.append("description", createItems.description);
+      fd.append("price", createItems.price);
+      fd.append("isVeg", createItems.isVeg);
+
+      fd.append("deliveryTime[min]", createItems.deliveryTime.min);
+      fd.append("deliveryTime[max]", createItems.deliveryTime.max);
+      // fd.append("images", createItems.images);
 
       if (createItems.images) {
-        formData.append("images", createItems.images);
+        fd.append("images", createItems.images);
       }
 
-      console.log(formData);
-      const token = localStorage.getItem("token"); // fetch token
+      // DEBUG: Console me check karein ki FormData me kya ja raha hai
+      for (var pair of fd.entries()) {
+        console.log(pair[0] + ", " + pair[1]);
+      }
 
-      const res = await api.post("/menuitem", formData, {
+      await api.post("/menuitem", fd, {
         headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",
         },
       });
 
-      setMsg("New Item added!");
+      setMsg("New Restaurant added!");
 
-      createItems({
+      setCreateItems({
         restaurant: restaurantId,
         name: "",
         description: "",
         price: "",
-        images: "",
-        isVeg: false,
-        deliveryTime: "",
+        images: null,
+        isVeg: true,
+        deliveryTime: { min: "", max: "" },
       });
 
       setIsOpen(false);
-      fetchRestaurants();
+      fetchMenuItems();
+      fetchResMenuItem();
     } catch (err) {
       setMsg(err.response?.data?.error || "Something went wrong");
     }
@@ -152,7 +165,7 @@ export default function RestaurantDetails() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white rounded-xl shadow-md overflow-hidden">
           <img
-            src={`http://localhost:5000/${menuItems.images?.[0]}`}
+            src={`${menuItems.images?.[0]}`}
             className="h-40 w-full object-cover"
             alt="restaurant"
           />
@@ -181,36 +194,52 @@ export default function RestaurantDetails() {
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        {allitems.map((r) => (
-          <div key={r._id} className="bg-white p-4 rounded shadow">
+        {allitems.map((item) => (
+          <div key={item._id} className="bg-white p-4 rounded shadow">
             <img
-              src={r.image || "https://via.placeholder.com/200"}
-              alt={r.name}
+              src={`http://localhost:5000/${item.images?.[0]}`}
+              alt={item.name}
               className="h-40 w-full object-cover rounded"
             />
 
             <div className="flex flex-row justify-between items-center">
               <h3 className="mt-2 font-semibold">
-                {r.name}
-                <span className="ps-2 text-sm">{r.isVeg ? "🟢" : "🔴"}</span>
+                {item.name}
+                <span className="ps-2 text-sm">{item.isVeg ? "🟢" : "🔴"}</span>
               </h3>
               <p className="text-sm text-gray-600">★★★★</p>
             </div>
 
-            <p className="text-sm text-gray-600">{r.description}</p>
+            <p className="text-sm text-gray-600">{item.description}</p>
 
             <div className="mt-2 flex justify-between items-center">
-              <Link to={`/menuitem/${r._id}`} className="text-sm text-blue-600">
+              <Link
+                to={`/menuitem/${item._id}`}
+                className="text-sm text-blue-600"
+              >
                 View
               </Link>
 
               <div className="text-sm flex flex-row gap-2">
-                <p className="font-bold">₹{r.price}</p>
-                {r.discount && (
+                <p className="font-bold">₹{item.price}</p>
+                {item.discount && (
                   <p className="line-through text-green-900 font-medium">
-                    {r.discount}% off
+                    {item.discount}% off
                   </p>
                 )}
+              </div>
+
+              <div>
+                <button
+                  onClick={() => {
+                    setSelectedItemId(item._id);
+                    setItemOpen(true);
+                  }}
+                >
+                  Edit
+                </button>
+
+                {/* <button onClick={() => setIsOpen(true)}>Delete</button> */}
               </div>
             </div>
           </div>
@@ -245,10 +274,7 @@ export default function RestaurantDetails() {
             )}
 
             <form onSubmit={handleSubmit}>
-              <input
-                type="hidden"
-                value={createItems.restaurantId}
-              />
+              <input type="hidden" value={restaurantId} />
 
               <label className="block mb-2 text-gray-700 text-sm font-semibold">
                 Item Name
@@ -285,23 +311,34 @@ export default function RestaurantDetails() {
               />
 
               <label className="block mb-2 text-gray-700 text-sm font-semibold">
-                Image
+                images
               </label>
               <input
                 type="file"
+                name="images"
                 onChange={(e) =>
-                  setCreateResto({ ...createResto, images: e.target.files[0] })
+                  setCreateItems({ ...createItems, images: e.target.files[0] })
                 }
                 className="w-full mb-4 p-2 border rounded"
               />
 
               <label className="block mb-2 text-gray-700 text-sm font-semibold">
-                Delivery Time (mins)
+                Delivery Time (min)
               </label>
               <input
                 type="number"
-                name="deliveryTime"
-                value={createItems.deliveryTime}
+                name="min"
+                value={createItems.deliveryTime.min}
+                onChange={handleChange}
+                className="w-full mb-4 p-2 border rounded"
+              />
+              <label className="block mb-2 text-gray-700 text-sm font-semibold">
+                Delivery Time (mix)
+              </label>
+              <input
+                type="number"
+                name="max"
+                value={createItems.deliveryTime.max}
                 onChange={handleChange}
                 className="w-full mb-4 p-2 border rounded"
               />
@@ -328,6 +365,15 @@ export default function RestaurantDetails() {
               </button>
             </form>
           </div>
+        </div>
+      )}
+      {itemOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <EditMenuItem
+            itemId={selectedItemId}
+            onClose={() => setItemOpen(false)}
+            fetchResMenuItem={fetchResMenuItem}
+          />
         </div>
       )}
     </div>

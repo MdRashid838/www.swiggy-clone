@@ -67,13 +67,6 @@ export default function Profile() {
       {auth.user?.role == "admin" ?
       <div>
       <div>
-      <button
-        onClick={() => setIsOpen(true)}
-        className="px-4 py-2 bg-blue-600 text-white mt-5 ml-5 rounded hover:bg-blue-700 transition"
-      >
-        Add Item
-      </button>
-
       {/* Modal */}
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">

@@ -1,31 +1,35 @@
-import { createSlice } from '@reduxjs/toolkit'
+import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  items: JSON.parse(localStorage.getItem('cart') || '[]')
-}
+  items: JSON.parse(localStorage.getItem("cart") || "[]"),
+};
 
 const slice = createSlice({
-  name: 'cart',
+  name: "cart",
   initialState,
   reducers: {
-    addItem(state, action){
-      const item = action.payload
-      const found = state.items.find(i => i.menuItem === item.menuItem)
-      if(found){
-        found.quantity += item.quantity
-      } else state.items.push(item)
-      localStorage.setItem('cart', JSON.stringify(state.items))
-    },
-    removeItem(state, action){
-      state.items = state.items.filter(i => i.menuItem !== action.payload)
-      localStorage.setItem('cart', JSON.stringify(state.items))
-    },
-    clearCart(state){
-      state.items = []
-      localStorage.removeItem('cart')
-    }
-  }
-})
+    addItem(state, action) {
+      const item = action.payload;
+      const found = state.items.find((i) => i._id === item._id);
 
-export const { addItem, removeItem, clearCart } = slice.actions
-export default slice.reducer
+      if (found) {
+        found.quantity = (found.quantity || 1) + 1;
+      } else {
+        state.items.push({ ...item, quantity: 1 });
+      }
+
+      localStorage.setItem("cart", JSON.stringify(state.items));
+    },
+    removeItem(state, action) {
+      state.items = state.items.filter((i) => i._id !== action.payload);
+      localStorage.setItem("cart", JSON.stringify(state.items));
+    },
+    clearCart(state) {
+      state.items = [];
+      localStorage.removeItem("cart");
+    },
+  },
+});
+
+export const { addItem, removeItem, clearCart } = slice.actions;
+export default slice.reducer;
