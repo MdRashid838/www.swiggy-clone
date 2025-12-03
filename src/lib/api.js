@@ -1,7 +1,7 @@
 import axios from 'axios'
 import store from '../store'
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000/'
+const API_BASE = import.meta.env.VITE_API_BASE || 'https://swiggy-api-com.onrender.com'
 
 const api = axios.create({
   baseURL: API_BASE,
