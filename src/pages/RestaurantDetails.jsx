@@ -197,7 +197,7 @@ export default function RestaurantDetails() {
         {allitems.map((item) => (
           <div key={item._id} className="bg-white p-4 rounded shadow">
             <img
-              src={`https://swiggy-api-com.onrender.com${item.images?.[0]}`}
+              src={`https://swiggy-backend-fyo3.onrender.com${item.images?.[0]}`}
               alt={item.name}
               className="h-40 w-full object-cover rounded"
             />
