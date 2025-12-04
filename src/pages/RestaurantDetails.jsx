@@ -165,7 +165,7 @@ export default function RestaurantDetails() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white rounded-xl shadow-md overflow-hidden">
           <img
-            src={`${menuItems.images?.[0]}`}
+            src={`https://swiggy-backend-fyo3.onrender.com/${menuItems.images?.[0]}`}
             className="h-40 w-full object-cover"
             alt="restaurant"
           />

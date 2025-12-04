@@ -125,7 +125,7 @@ export default function Restaurant() {
             className="bg-white rounded-xl shadow-md overflow-hidden"
           >
             <img
-              src={`https://swiggy-backend-fyo3.onrender/${item.images?.[0]}`}
+              src={`https://swiggy-backend-fyo3.onrender.com/${item.images?.[0]}`}
               className="h-40 w-full object-cover"
               alt="restaurant"
             />

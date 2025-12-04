@@ -78,7 +78,7 @@ export default function MenuItemPage() {
             <div key={r._id} className="bg-white p-4 rounded shadow">
 
               <img
-                src={r.image || "https://via.placeholder.com/200"}
+                src={`https://swiggy-backend-fyo3.onrender.com/${r.images?.[0]}`}
                 alt={r.name}
                 className="h-40 w-full object-cover rounded"
               />
