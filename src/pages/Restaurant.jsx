@@ -24,14 +24,18 @@ export default function Restaurant() {
   const [msg, setMsg] = useState("");
 
   // fetch restaurants
-  const fetchRestaurants = async () => {
-    try {
-      const res = await api.get("/restaurant");
-      setRestaurants(res.data.data || res.data);
-    } catch (err) {
-      console.log("Error fetching:", err);
-    }
-  };
+ async function fetchRestaurants() {
+  try {
+    const res = await api.get("/restaurant");
+
+    const data = res.data.data || res.data || [];
+    setRestaurants(Array.isArray(data) ? data : []);
+
+  } catch (err) {
+    console.error(err);
+  }
+}
+
 
   useEffect(() => {
     fetchRestaurants();

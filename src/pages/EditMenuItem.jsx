@@ -89,7 +89,7 @@ export default function EditMenuItem({ itemId, onClose,fetchResMenuItem }) {
     }
   };
 
-  // if (!item) return <div>Loading...</div>;
+  if (!item) return <div>Loading...</div>;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-white w-full max-w-2xl max-h-[90%] overflow-y-scroll scrollbar-hide p-6 rounded-xl shadow-lg relative">

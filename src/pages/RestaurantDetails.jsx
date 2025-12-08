@@ -2,17 +2,17 @@ import React, { useState, useEffect } from "react";
 import api from "../lib/api";
 import { useParams, Link } from "react-router-dom";
 import EditMenuItem from "./EditMenuItem";
+import RestaurentEditDelete from "./RestaurantEditDelete"
 
 export default function RestaurantDetails() {
   const { id } = useParams();
   const restaurantId = id;
-  // const auth = useSelector((s) => s.auth);
   const [isOpen, setIsOpen] = useState(false);
   const [itemOpen, setItemOpen] = useState(false);
-  const [allitems, setAllItems] = useState([]);
+  const [allMenuItem, setAllMenuItems] = useState([]);
   const [selectedItemId, setSelectedItemId] = useState(null);
 
-  const [menuItems, setMenuItems] = useState([]);
+  const [restaurent, setRestaurent] = useState([]);
 
   //   console.log(id)
   const [createItems, setCreateItems] = useState({
@@ -28,11 +28,11 @@ export default function RestaurantDetails() {
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState("");
 
-  // fetch restaurants
-  const fetchMenuItems = async () => {
+  // fetch restaurant
+  const fetchRestaurant = async () => {
     try {
       const res = await api.get(`/restaurant/${restaurantId}`);
-      setMenuItems(res.data.data);
+      setRestaurent(res.data.data);
     } catch (err) {
       console.log("Error fetching:", err);
     }
@@ -42,34 +42,16 @@ export default function RestaurantDetails() {
   async function fetchResMenuItem() {
     try {
       const res = await api.get(`/menuitem/restaurant/${restaurantId}`);
-      setAllItems(res.data); // CORRECT
+      setAllMenuItems(res.data); // CORRECT
     } catch (err) {
       console.error(err);
     }
   }
 
   useEffect(() => {
-    fetchMenuItems();
+    fetchRestaurant();
     fetchResMenuItem();
   }, []);
-
-  //   const handleChange = (e) => {
-  //     const { name, value } = e.target;
-
-  //     if (["address", "lat", "lng"].includes(name)) {
-  //       setCreateResto({
-  //         ...createResto,
-  //         location: {
-  //           ...createResto.location,
-  //           [name]: value,
-  //         },
-  //       });
-  //     } else if (name === "isOpen") {
-  //       setCreateResto({ ...createResto, isOpen: value === "true" });
-  //     } else {
-  //       setCreateResto({ ...createResto, [name]: value });
-  //     }
-  //   };
 
   const handleChange = (e) => {
     const { name, value, type, checked, files } = e.target;
@@ -139,7 +121,7 @@ export default function RestaurantDetails() {
       });
 
       setIsOpen(false);
-      fetchMenuItems();
+      fetchRestaurant();
       fetchResMenuItem();
     } catch (err) {
       setMsg(err.response?.data?.error || "Something went wrong");
@@ -148,12 +130,31 @@ export default function RestaurantDetails() {
     setLoading(false);
   };
 
+  const handleDelete = async (id) => {
+    // Optional: Add a confirmation check
+    if (!window.confirm("Are you sure you want to delete this item?")) return;
+
+    try {
+      // Make the DELETE request to your backend
+      const response = await api.delete(`/menuitem/${id}`, {
+        method: "DELETE",
+      });   
+
+      alert("Item deleted successfully!");
+      fetchRestaurant();
+      fetchResMenuItem();
+    } catch (error) {
+      console.error("Error deleting item:", error);
+      alert("Error deleting item");
+    }
+  };
+
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
       {" "}
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex justify-between items-center sticky top-20 bg-gray-100 py-4 px-2 mb-4">
         {" "}
-        <h1 className="text-2xl font-bold">{menuItems.name}</h1>
+        <h1 className="text-2xl font-bold">{restaurent.name}</h1>
         <button
           onClick={() => setIsOpen(true)}
           className="bg-blue-600 text-white px-4 py-2 rounded-lg"
@@ -165,36 +166,39 @@ export default function RestaurantDetails() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white rounded-xl shadow-md overflow-hidden">
           <img
-            src={`https://swiggy-backend-fyo3.onrender.com/${menuItems.images?.[0]}`}
+            src={`https://swiggy-backend-fyo3.onrender.com/${restaurent.images?.[0]}`}
             className="h-40 w-full object-cover"
             alt="restaurant"
           />
 
           <div className="p-4">
-            <h2 className="text-lg font-semibold">{menuItems.name}</h2>
+            <h2 className="text-lg font-semibold">{restaurent.name}</h2>
             <p className="text-gray-600 text-sm">
-              {menuItems?.location?.address}
+              {restaurent?.location?.address}
             </p>
             <div className="flex items-center mt-2 text-sm">
               <span className="text-yellow-500 font-bold">
-                ★ {menuItems.rating}
+                ★ {restaurent.rating}
               </span>
               <span className="text-gray-500 ml-2">
-                ({menuItems.ratingCount})
+                ({restaurent.ratingCount})
               </span>
             </div>
             <p
               className={`mt-1 text-sm font-semibold ${
-                menuItems.isOpen ? "text-green-600" : "text-red-600"
+                restaurent.isOpen ? "text-green-600" : "text-red-600"
               }`}
             >
-              {menuItems.isOpen ? "Open Now" : "Closed"}
+              {restaurent.isOpen ? "Open Now" : "Closed"}
             </p>
+          </div>
+          <div>
+            <RestaurentEditDelete restaurentId={restaurantId} fetchRestaurant={fetchRestaurant} fetchResMenuItem={fetchResMenuItem} />
           </div>
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        {allitems.map((item) => (
+        {allMenuItem.map((item) => (
           <div key={item._id} className="bg-white p-4 rounded shadow">
             <img
               src={`https://swiggy-backend-fyo3.onrender.com/${item.images?.[0]}`}
@@ -239,13 +243,13 @@ export default function RestaurantDetails() {
                   Edit
                 </button>
 
-                {/* <button onClick={() => setIsOpen(true)}>Delete</button> */}
+                <button onClick={() => handleDelete(item._id)}>Delete</button>
               </div>
             </div>
           </div>
         ))}
 
-        {allitems.length === 0 && (
+        {allMenuItem.length === 0 && (
           <p className="text-gray-600 text-center min-w-full col-span-4">
             No items found
           </p>

@@ -16,14 +16,14 @@ export default function Nav(){
 
   return (
     <nav className='bg-white sticky top-0 shadow'>
-      <div className='container mx-auto px-4 py-3 flex items-center justify-between'>
-        <Link to='/' className='font-bold text-xl'>Swiggy Clone</Link>
-        <div className='flex items-center gap-4'>
+      <div className='container mx-auto h-20 px-4 py-3 flex items-center justify-between'>
+        <Link to='/' className='font-bold text-2xl rounded-full px-3 py-1 shadow-lg'>Swiggy Clone</Link>
+        <div className='flex text-lg font-medium text-gray-700 items-center gap-4'>
           <Link to='/'>Home</Link>
           {auth.user ? (
             <>
               <Link to='/profile'>{auth.user.name}</Link>
-              <button onClick={logout} className='text-sm'>Logout</button>
+              <button onClick={logout} className='text-lg text-red-600'>Logout</button>
             </>
           ) : (
             <>

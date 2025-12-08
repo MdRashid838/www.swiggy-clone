@@ -1,11 +1,12 @@
 import axios from 'axios'
 import store from '../store'
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'https://swiggy-backend-fyo3.onrender.com'
+const API_BASE = import.meta.env.VITE_API_BASE || 'http:localhost:5000'
 
+console.log(API_BASE)
 const api = axios.create({
   baseURL: API_BASE,
-  headers: { 'Content-Type': 'application/json' }
+  withCredentials: true
 })
 
 // attach token
