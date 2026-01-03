@@ -10,6 +10,7 @@ import AdminDashboard from './pages/admin/AdminDashboard'
 import Nav from './components/Nav'
 import PrivateRoute from './components/PrivateRoute'
 import RestaurantDetails from './pages/RestaurantDetails'
+import ForgotPassword from './pages/auth/ForgetPassword'
 
 export default function App(){
   return (
@@ -19,6 +20,8 @@ export default function App(){
         <Routes>
           <Route path='/' element={<Home/>} />
           <Route path='/login' element={<Login/>} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/update-password" element={<ForgotPassword />} />
           <Route path='/register' element={<Register/>} />
           <Route path='/restaurant/:id' element={<RestaurantDetails/>} />
           <Route path='/cart' element={<CartPage/>} />

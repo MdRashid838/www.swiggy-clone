@@ -13,6 +13,9 @@ export default function Nav(){
     dispatch(clearAuth())
     nav('/')
   }
+  console.log("AUTH USER:", auth.user);
+console.log("NAME:", auth.user?.name, typeof auth.user?.name);
+
 
   return (
     <nav className='bg-white sticky top-0 shadow'>
@@ -22,7 +25,7 @@ export default function Nav(){
           <Link to='/'>Home</Link>
           {auth.user ? (
             <>
-              <Link to='/profile'>{auth.user.name}</Link>
+              <Link to='/profile'>{auth.user?.name || "Profile"}</Link>
               <button onClick={logout} className='text-lg text-red-600'>Logout</button>
             </>
           ) : (
