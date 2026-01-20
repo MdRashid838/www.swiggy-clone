@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import api from "../lib/api";
 import {Link } from "react-router-dom"
+import { X } from "lucide-react"
 
 export default function Restaurant() {
   const [showPopup, setShowPopup] = useState(false);
@@ -110,6 +111,7 @@ export default function Restaurant() {
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
       {" "}
+      {/* add restaurent button */}
       <div className="flex justify-between items-center mb-4">
         {" "}
         <h1 className="text-2xl font-bold">Restaurants</h1>
@@ -163,7 +165,7 @@ export default function Restaurant() {
               onClick={() => setShowPopup(false)}
               className="absolute top-3 right-3 text-xl"
             >
-              ✖
+              <X />
             </button>
 
             {msg && (

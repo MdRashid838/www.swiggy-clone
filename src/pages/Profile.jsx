@@ -190,36 +190,259 @@
 //   );
 // }
 
+// import React, { useEffect, useState } from "react";
+// import api from "../lib/api";
+// import { useSelector } from "react-redux";
+// import Restaurant from "./Restaurant";
+// import ProfileCard from "./ProfileCard";
 
+// export default function Profile() {
+//   const auth = useSelector((s) => s.auth);
+
+//   // NEW: profile data from backend
+//   const [profileData, setProfileData] = useState(null);
+
+//   const [isOpen, setIsOpen] = useState(false);
+//   const [form, setForm] = useState({
+//     restaurant: "",
+//     name: "",
+//     description: "",
+//     price: "",
+//     image: "",
+//     isVeg: false,
+//     deliveryTime: "",
+//   });
+
+//   const [loading, setLoading] = useState(false);
+//   const [msg, setMsg] = useState("");
+
+//   /* =========================
+//      GET PROFILE (ADMIN / USER)
+//      ========================= */
+//   useEffect(() => {
+//     fetchProfile();
+//   }, []);
+
+//   const fetchProfile = async () => {
+//     try {
+//       const res = await api.get("/users/profile");
+
+//       // backend role based response
+//       setProfileData(res.data);
+//     } catch (err) {
+//       console.error("Profile fetch error", err);
+//     }
+//   };
+
+//   /* =========================
+//      UPDATE PROFILE (NAME / IMAGE)
+//      ========================= */
+//   // const updateProfile = async (data) => {
+//   //   try {
+//   //     await api.patch("/users/profile", data);
+//   //     setMsg("Profile updated successfully");
+//   //     fetchProfile();
+//   //   } catch (err) {
+//   //     setMsg("Profile update failed");
+//   //   }
+//   // };
+
+//   /* =========================
+//      EXISTING HANDLERS (UNCHANGED)
+//      ========================= */
+//   // const handleChange = (e) => {
+//   //   const { name, value, type, checked } = e.target;
+//   //   setForm({
+//   //     ...form,
+//   //     [name]: type === "checkbox" ? checked : value,
+//   //   });
+//   // };
+
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+//     setLoading(true);
+//     setMsg("");
+
+//     try {
+//       await api.post("/", form); // existing backend route
+//       setMsg("Menu item added successfully!");
+//       setForm({
+//         restaurant: "",
+//         name: "",
+//         description: "",
+//         price: "",
+//         image: "",
+//         isVeg: false,
+//         deliveryTime: "",
+//       });
+//       setIsOpen(false);
+//     } catch (err) {
+//       setMsg(err.response?.data?.error || "Something went wrong");
+//     }
+
+//     setLoading(false);
+//   };
+
+//   if (!profileData) {
+//     return <div>Loading profile...</div>;
+//   }
+
+//   console.log("profileData:", profileData);
+//   console.log("restaurant:", profileData?.restaurant);
+//   console.log(
+//     "restaurant keys:",
+//     profileData?.restaurant && Object.keys(profileData.restaurant)
+//   );
+//   console.log(profileData.profile);
+//   console.log(profileData.profile.restaurant);
+
+//   return (
+//     <div className="flex flex-row">
+//       {/* ================= PROFILE SECTION ================= */}
+//       <div className=" bg-white p-6 rounded shadow mt-5">
+//         <ProfileCard />
+//         {/* <h2 className="text-xl font-bold mb-4">Profile</h2>
+
+//         <div>
+//           <strong>Name:</strong> {profileData?.profile?.name}
+//         </div>
+//         <div>
+//           <strong>Email:</strong> {profileData?.profile?.email}
+//         </div>
+//         <div>
+//           <strong>Role:</strong> {profileData?.profile?.role}
+//         </div> */}
+//       </div>
+
+//       <div className="w-full">
+//         {/* ================= ADMIN VIEW ================= */}
+//         {auth.user?.role === "admin" && (
+//           <>
+//             {/* All Users */}
+//             {/* <div className="max-w-lg mx-auto mt-4 bg-white p-4 rounded shadow">
+//             <h3 className="font-semibold mb-2">All Users</h3>
+//             {profileData?.users?.map((u) => (
+//               <div key={u._id} className="text-sm border-b py-1">
+//                 {u.email}
+//               </div>
+//             ))}
+//           </div> */}
+
+//             {/* All Restaurants */}
+//             {/* <div className="max-w-lg mx-auto mt-4 bg-white p-4 rounded shadow">
+//             <h3 className="font-semibold mb-2">All Restaurants</h3>
+//             {profileData?.restaurants?.map((r) => (
+//               <div key={r._id} className="text-sm border-b py-1">
+//                 {r.name}
+//               </div>
+//             ))}
+//           </div> */}
+
+//             {/* Existing Restaurant Component */}
+//             <Restaurant />
+//           </>
+//         )}
+
+//         {/* ================= USER VIEW ================= */}
+//         {/* {auth.user?.role === "user" && (
+//           <>
+
+//             {profileData?.restaurant && (
+//               <div className="max-w-lg mx-auto mt-4 bg-white p-4 rounded shadow">
+//                 <h3 className="font-semibold">My Restaurant</h3>
+//                 <p>{profileData.restaurant.name}</p>
+//               </div>
+//             )}
+
+//             {profileData?.items && (
+//               <div className="max-w-lg mx-auto mt-4 bg-white p-4 rounded shadow">
+//                 <h3 className="font-semibold mb-2">My Items</h3>
+//                 {profileData.items.map((item) => (
+//                   <div key={item._id} className="text-sm border-b py-1">
+//                     {item.name} – ₹{item.price}
+//                   </div>
+//                 ))}
+//               </div>
+//             )}
+//           </>
+//         )} */}
+
+//         {auth.user?.role === "user" && (
+//           <>
+//             {/* CASE 1: User HAS restaurant */}
+//             {profileData?.profile?.restaurant ? (
+//               <>
+//                 {/* My Restaurant */}
+//                 <div className="max-w-lg mx-auto mt-4 bg-white p-4 rounded shadow">
+//                   <h3 className="font-semibold">My Restaurant</h3>
+//                   <p>{profileData.profile.restaurant.name}</p>
+//                   <p>{profileData.profile.restaurant.rating}</p>
+//                   <p>{profileData.profile.restaurant.address}</p>
+//                 </div>
+
+//                 {/* My Items */}
+//                 {/* {[profileData]?.items && profileData.items.length > 0 && ( */}
+//                   <div className="max-w-lg mx-auto mt-4 bg-white p-4 rounded shadow">
+//                     <h3 className="font-semibold mb-2">My Items</h3>
+//                     {profileData.profile.restaurant.items.map((item) => (
+//                       <div key={item._id} className="text-sm border-b py-1">
+//                         {item.name} – ₹{item.price}
+//                       </div>
+//                     ))}
+//                   </div>
+//                 {/* )} */}
+//               </>
+//             ) : (
+//               /* CASE 2: User has NO restaurant */
+//               <div>
+//                 <Restaurant />
+//               </div>
+//             )}
+//           </>
+//         )}
+
+//         {/* ================= EXISTING ADMIN MODAL (UNCHANGED) ================= */}
+//         {auth.user?.role === "admin" && isOpen && (
+//           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+//             <div className="bg-white w-full max-w-2xl max-h-[90%] overflow-y-scroll p-6 rounded-xl shadow-lg relative">
+//               <button
+//                 onClick={() => setIsOpen(false)}
+//                 className="absolute top-3 right-3 text-xl font-bold"
+//               >
+//                 &times;
+//               </button>
+
+//               <h2 className="text-2xl font-bold mb-6 text-center">
+//                 Create Menu Item
+//               </h2>
+
+//               {msg && (
+//                 <p className="mb-4 text-center text-sm text-green-600">{msg}</p>
+//               )}
+
+//               <form onSubmit={handleSubmit}>{/* form fields unchanged */}</form>
+//             </div>
+//           </div>
+//         )}
+//       </div>
+//     </div>
+//   );
+// }
 
 import React, { useEffect, useState } from "react";
 import api from "../lib/api";
 import { useSelector } from "react-redux";
 import Restaurant from "./Restaurant";
 import ProfileCard from "./ProfileCard";
+import AddItems from "./AddItems";
 
 export default function Profile() {
   const auth = useSelector((s) => s.auth);
 
-  // ✅ NEW: profile data from backend
   const [profileData, setProfileData] = useState(null);
 
-  const [isOpen, setIsOpen] = useState(false);
-  const [form, setForm] = useState({
-    restaurant: "",
-    name: "",
-    description: "",
-    price: "",
-    image: "",
-    isVeg: false,
-    deliveryTime: "",
-  });
-
-  const [loading, setLoading] = useState(false);
-  const [msg, setMsg] = useState("");
-
   /* =========================
-     GET PROFILE (ADMIN / USER)
+     GET PROFILE
      ========================= */
   useEffect(() => {
     fetchProfile();
@@ -228,8 +451,6 @@ export default function Profile() {
   const fetchProfile = async () => {
     try {
       const res = await api.get("/users/profile");
-
-      // backend role based response
       setProfileData(res.data);
     } catch (err) {
       console.error("Profile fetch error", err);
@@ -237,153 +458,71 @@ export default function Profile() {
   };
 
   /* =========================
-     UPDATE PROFILE (NAME / IMAGE)
+     LOADING STATE (VERY IMPORTANT)
      ========================= */
-  const updateProfile = async (data) => {
-    try {
-      await api.patch("/users/profile", data);
-      setMsg("Profile updated successfully");
-      fetchProfile();
-    } catch (err) {
-      setMsg("Profile update failed");
-    }
-  };
+  if (!profileData || !profileData.profile) {
+    return <div>Loading profile...</div>;
+  }
 
-  /* =========================
-     EXISTING HANDLERS (UNCHANGED)
-     ========================= */
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setForm({
-      ...form,
-      [name]: type === "checkbox" ? checked : value,
-    });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setMsg("");
-
-    try {
-      await api.post("/", form); // existing backend route
-      setMsg("Menu item added successfully!");
-      setForm({
-        restaurant: "",
-        name: "",
-        description: "",
-        price: "",
-        image: "",
-        isVeg: false,
-        deliveryTime: "",
-      });
-      setIsOpen(false);
-    } catch (err) {
-      setMsg(err.response?.data?.error || "Something went wrong");
-    }
-
-    setLoading(false);
-  };
+  const restaurant = profileData.profile.restaurant;
+  console.log(restaurant, "pppppppppppppppp");
 
   return (
-    <div className="relative">
+    <div className="flex flex-row gap-5">
       {/* ================= PROFILE SECTION ================= */}
-      <div className="max-w-lg mx-auto bg-white p-6 rounded shadow mt-5">
+      {/* <div className="w-[30%] sticky top-20 bg-white rounded shadow"> */}
+      <ProfileCard />
+      {/* </div> */}
 
-        <ProfileCard/>
-        {/* <h2 className="text-xl font-bold mb-4">Profile</h2>
+      <div className="w-full">
+        {/* ================= ADMIN VIEW ================= */}
+        {auth.user?.role === "admin" && <Restaurant />}
 
-        <div>
-          <strong>Name:</strong> {profileData?.profile?.name}
-        </div>
-        <div>
-          <strong>Email:</strong> {profileData?.profile?.email}
-        </div>
-        <div>
-          <strong>Role:</strong> {profileData?.profile?.role}
-        </div> */}
-      </div>
-
-      {/* ================= ADMIN VIEW ================= */}
-      {auth.user?.role === "admin" && (
-        <>
-          {/* All Users */}
-          <div className="max-w-lg mx-auto mt-4 bg-white p-4 rounded shadow">
-            <h3 className="font-semibold mb-2">All Users</h3>
-            {profileData?.users?.map((u) => (
-              <div key={u._id} className="text-sm border-b py-1">
-                {u.email}
-              </div>
-            ))}
-          </div>
-
-          {/* All Restaurants */}
-          <div className="max-w-lg mx-auto mt-4 bg-white p-4 rounded shadow">
-            <h3 className="font-semibold mb-2">All Restaurants</h3>
-            {profileData?.restaurants?.map((r) => (
-              <div key={r._id} className="text-sm border-b py-1">
-                {r.name}
-              </div>
-            ))}
-          </div>
-
-          {/* Existing Restaurant Component */}
-          <Restaurant />
-        </>
-      )}
-
-      {/* ================= USER VIEW ================= */}
-      {auth.user?.role === "user" && (
-        <>
-          {/* User Restaurant */}
-          {profileData?.restaurant && (
-            <div className="max-w-lg mx-auto mt-4 bg-white p-4 rounded shadow">
-              <h3 className="font-semibold">My Restaurant</h3>
-              <p>{profileData.restaurant.name}</p>
-            </div>
-          )}
-
-          {/* Restaurant Items */}
-          {profileData?.items && (
-            <div className="max-w-lg mx-auto mt-4 bg-white p-4 rounded shadow">
-              <h3 className="font-semibold mb-2">My Items</h3>
-              {profileData.items.map((item) => (
-                <div key={item._id} className="text-sm border-b py-1">
-                  {item.name} – ₹{item.price}
+        {/* ================= USER VIEW ================= */}
+        {auth.user?.role === "user" && (
+          <>
+            {/* ===== CASE 1: USER HAS RESTAURANT ===== */}
+            {restaurant ? (
+              <div className="flex flex-col md:flex-row gap-5">
+                {/* ===== MY ITEMS ===== */}
+                <div className="w-full max-w-[70%] bg-white rounded shadow">
+                  <AddItems restaurant={restaurant}/>
+                  {/* {Array.isArray(restaurant.items) &&
+                  restaurant.items.length > 0 ? (
+                    restaurant.items.map((item) => (
+                      <div key={item._id} className="text-sm border-b py-1">
+                        {item.name} – ₹{item.price}
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-gray-500">No items added yet</p>
+                  )} */}
                 </div>
-              ))}
-            </div>
-          )}
-        </>
-      )}
-
-      {/* ================= EXISTING ADMIN MODAL (UNCHANGED) ================= */}
-      {auth.user?.role === "admin" && isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white w-full max-w-2xl max-h-[90%] overflow-y-scroll p-6 rounded-xl shadow-lg relative">
-            <button
-              onClick={() => setIsOpen(false)}
-              className="absolute top-3 right-3 text-xl font-bold"
-            >
-              &times;
-            </button>
-
-            <h2 className="text-2xl font-bold mb-6 text-center">
-              Create Menu Item
-            </h2>
-
-            {msg && (
-              <p className="mb-4 text-center text-sm text-green-600">
-                {msg}
-              </p>
+                {/* ===== MY RESTAURANT ===== */}
+                <div className="max-w-[30%] w-full mx-auto sticky top-20 z-[-10] bg-white p-4 rounded shadow">
+                  <h3 className="font-semibold">My Restaurant</h3>
+                  <div className="flex flex-col gap-2">
+                    <img
+                      src={`https://swiggy-backend-fyo3.onrender.com/${restaurant.images}`}
+                      alt="image"
+                    />
+                    <div className="flex flex-col gap-1">
+                      <p>{restaurant.name}</p>
+                      {restaurant.rating && <p>Rating: {restaurant.rating}</p>}
+                      {restaurant.location?.address && (
+                        <p>{restaurant.location.address}</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              /* ===== CASE 2: USER HAS NO RESTAURANT ===== */
+              <Restaurant />
             )}
-
-            <form onSubmit={handleSubmit}>
-              {/* form fields unchanged */}
-            </form>
-          </div>
-        </div>
-      )}
+          </>
+        )}
+      </div>
     </div>
   );
 }

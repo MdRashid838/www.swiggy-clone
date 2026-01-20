@@ -16,7 +16,9 @@ export default function App(){
   return (
     <div className='min-h-screen'>
       <Nav />
-      <main className='container mx-auto p-4'>
+      <main className='container mx-auto px-4 
+       "bg-gradient-to-b from-green-50 via-green-100 to-green-50 text-white"
+      '>
         <Routes>
           <Route path='/' element={<Home/>} />
           <Route path='/login' element={<Login/>} />

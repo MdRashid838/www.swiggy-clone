@@ -26,7 +26,6 @@ console.log("NAME:", auth.user?.name, typeof auth.user?.name);
           {auth.user ? (
             <>
               <Link to='/profile'>{auth.user?.name || "Profile"}</Link>
-              <button onClick={logout} className='text-lg text-red-600'>Logout</button>
             </>
           ) : (
             <>
